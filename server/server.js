@@ -55,6 +55,7 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
           ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
           ...headers,
         },
+        timeout: 10000,
       },
       (res) => {
         let data = '';
@@ -67,6 +68,10 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
       }
     );
     req.on('error', reject);
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Request timed out'));
+    });
     if (payload) req.write(payload);
     req.end();
   });
@@ -84,12 +89,21 @@ function send(res, status, obj) {
 }
 
 function readBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    req.on('data', (c) => {
+      data += c;
+      if (data.length > 1e6) {
+        req.destroy();
+        reject(new Error('Payload too large'));
+      }
+    });
     req.on('end', () => {
-      try { resolve(data ? JSON.parse(data) : {}); }
-      catch (_) { resolve({}); }
+      try {
+        resolve(data ? JSON.parse(data) : {});
+      } catch (_) {
+        resolve({});
+      }
     });
   });
 }
@@ -106,13 +120,14 @@ async function createOrder(amountRupees, receipt) {
       payment_capture: 1,
     },
   });
-  if (status !== 200) throw new Error(`Razorpay order failed: ${JSON.stringify(body)}`);
+  if (status !== 200) throw new Error('Razorpay order failed');
   return body; // { id, amount, currency, ... }
 }
 
 // ── Razorpay: verify checkout signature ──────────────────────────────────────
 // signature = HMAC_SHA256(order_id + "|" + payment_id, key_secret)
 function verifySignature(orderId, paymentId, signature) {
+  if (!RZP_SECRET) return false;
   const expected = crypto
     .createHmac('sha256', RZP_SECRET)
     .update(`${orderId}|${paymentId}`)
@@ -134,7 +149,7 @@ async function nimChat(prompt, { temperature = 0.3, maxTokens = 600 } = {}) {
       max_tokens: maxTokens,
     },
   });
-  if (status !== 200) throw new Error(`NIM error ${status}: ${JSON.stringify(body)}`);
+  if (status !== 200) throw new Error('NIM error');
   return body?.choices?.[0]?.message?.content ?? '';
 }
 
@@ -179,8 +194,8 @@ const server = http.createServer(async (req, res) => {
 
     return send(res, 404, { error: 'not found' });
   } catch (e) {
-    console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    console.error('✗', e.stack || e.message);
+    return send(res, 500, { error: 'Internal Server Error' });
   }
 });
 

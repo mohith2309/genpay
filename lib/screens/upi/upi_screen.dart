@@ -27,8 +27,8 @@ import 'request_money_screen.dart';
 
 final upiTransactionsProvider = Provider<List<Transaction>>((ref) {
   final all = ref.watch(transactionsProvider).asData?.value ?? [];
-  return all.where((t) => t.paymentMethod == 'UPI' && t.isApproved).toList()
-    ..sort((a, b) => b.date.compareTo(a.date));
+  // Bolt ⚡: base transactionsProvider is already sorted, no need to sort again
+  return all.where((t) => t.paymentMethod == 'UPI' && t.isApproved).toList();
 });
 
 final upiMonthSpendProvider = Provider<double>((ref) {

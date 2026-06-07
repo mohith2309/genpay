@@ -1,0 +1,4 @@
+## 2024-06-07 - Denial of Service and Information Disclosure
+**Vulnerability:** The Node.js backend (`server/server.js`) was vulnerable to Denial of Service (DoS) due to unbounded parsing of request bodies in the `readBody` function. It also suffered from Information Disclosure, as upstream errors (e.g., from Razorpay or NVIDIA APIs) were being forwarded to the client in the response body via `res.send(500, { error: e.message })`.
+**Learning:** Even internal backend APIs with zero dependencies must strictly enforce payload limits to prevent malicious actors from exhausting memory resources. Unsanitized error messages often inadvertently leak sensitive information about the backend's internal state or upstream integrations.
+**Prevention:** Implement payload size limits (e.g., 1MB) during stream accumulation and explicitly return generic error messages (e.g., "Internal Server Error") for unhandled exceptions, restricting verbose error details to server-side logs.

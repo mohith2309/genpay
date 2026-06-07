@@ -50,6 +50,7 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
         hostname: url.hostname,
         path: url.pathname + url.search,
         method,
+        timeout: 10000,
         headers: {
           'Content-Type': 'application/json',
           ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
@@ -66,6 +67,10 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
         });
       }
     );
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Request timeout'));
+    });
     req.on('error', reject);
     if (payload) req.write(payload);
     req.end();
@@ -84,13 +89,20 @@ function send(res, status, obj) {
 }
 
 function readBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    req.on('data', (c) => {
+      data += c;
+      if (data.length > 1024 * 1024) {
+        req.destroy();
+        reject(new Error('Payload too large'));
+      }
+    });
     req.on('end', () => {
       try { resolve(data ? JSON.parse(data) : {}); }
       catch (_) { resolve({}); }
     });
+    req.on('error', reject);
   });
 }
 
@@ -180,7 +192,10 @@ const server = http.createServer(async (req, res) => {
     return send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    const isPayloadError = e.message === 'Payload too large';
+    return send(res, isPayloadError ? 413 : 500, {
+      error: isPayloadError ? e.message : 'Internal Server Error'
+    });
   }
 });
 

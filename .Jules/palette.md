@@ -1,0 +1,3 @@
+## 2025-05-15 - [Swipe Action Accessibility & Haptics]
+**Learning:** Swipe-to-action patterns (like in `TransactionCard`) are often inaccessible to screen reader users because they rely on specific gestures. Using `Semantics` with `customSemanticsActions` provides a standard way for assistive technologies to trigger these actions. Additionally, integrating `HapticFeedback` (light for reveals, medium for destructive/major actions, selectionClick for toggles) enhances the tactile experience and provides confirmation of interaction success.
+**Action:** Always wrap swipeable components in a `Semantics` widget and expose available actions via `customSemanticsActions`. Use `HapticFeedback` to provide subtle physical confirmation for significant UI interactions.

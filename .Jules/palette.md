@@ -1,0 +1,3 @@
+## 2025-05-14 - Gesture Accessibility and Haptic Feedback
+**Learning:** Swipe-to-action patterns (like delete/repeat in transaction lists) are often inaccessible to screen reader users. Using `Semantics` with `CustomSemanticsAction` allows these hidden actions to be exposed to assistive technologies without changing the visual design.
+**Action:** Always wrap gesture-based interactive components in `Semantics` and provide `CustomSemanticsAction` for all actions revealed via gestures. Use haptic feedback mapping (`mediumImpact` for destructive, `lightImpact` for snaps) to reinforce physical interactions.

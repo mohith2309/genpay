@@ -83,7 +83,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text(
                       'GenPay',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.4,
                           ),
@@ -109,9 +110,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         backgroundColor: AppColors.softRed,
                         child: IconButton(
                           icon: const Icon(Icons.sms_outlined),
+                          tooltip: 'Review SMS transactions',
                           onPressed: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const SmsReviewScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => const SmsReviewScreen(),
+                            ),
                           ),
                         ),
                       ),
@@ -134,24 +138,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Text(
                         AppUtils.formatMonthYear(DateTime.now()),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).hintColor,
-                              letterSpacing: 2,
-                            ),
+                          color: Theme.of(context).hintColor,
+                          letterSpacing: 2,
+                        ),
                       ).animate().fadeIn(delay: 100.ms),
                       const SizedBox(height: 8),
 
                       // Main amount — neutral hero (color comes from text theme)
                       AnimatedAmount(
-                        amount: totalSpent,
-                        style: Theme.of(context).textTheme.displayLarge,
-                      ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
+                            amount: totalSpent,
+                            style: Theme.of(context).textTheme.displayLarge,
+                          )
+                          .animate()
+                          .fadeIn(delay: 200.ms)
+                          .slideY(begin: 0.2, end: 0),
 
                       const SizedBox(height: 4),
                       Text(
                         'of ${AppUtils.formatCurrency(totalBudget)} budget',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).hintColor,
-                            ),
+                          color: Theme.of(context).hintColor,
+                        ),
                       ).animate().fadeIn(delay: 300.ms),
 
                       const SizedBox(height: 24),
@@ -163,16 +170,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                       // Pause mode banner
                       if (pauseState.isPaused) ...[
-                        _PauseModeBanner(remainingText: pauseState.remainingText),
+                        _PauseModeBanner(
+                          remainingText: pauseState.remainingText,
+                        ),
                         const SizedBox(height: 16),
                       ],
 
                       // Category quick cards
                       Text(
                         'CATEGORIES',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              letterSpacing: 2,
-                            ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelSmall?.copyWith(letterSpacing: 2),
                       ),
                       const SizedBox(height: 12),
                       _CategoryCards(budgets: budgets),
@@ -185,9 +194,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         children: [
                           Text(
                             'RECENT',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  letterSpacing: 2,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.labelSmall?.copyWith(letterSpacing: 2),
                           ),
                           TextButton(
                             onPressed: () {},
@@ -212,13 +221,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => TransactionDetailScreen(
-                                    transaction: entry.value),
+                                  transaction: entry.value,
+                                ),
                               ),
                             ),
                           ).animate().fadeIn(
-                                delay: (entry.key * 50).ms,
-                                duration: 400.ms,
-                              );
+                            delay: (entry.key * 50).ms,
+                            duration: 400.ms,
+                          );
                         }),
 
                       const SizedBox(height: 100),
@@ -261,9 +271,10 @@ class _OverallBudgetBarState extends State<_OverallBudgetBar>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    _animation = Tween<double>(begin: 0, end: widget.percentage.clamp(0, 1)).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: widget.percentage.clamp(0, 1),
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
     _controller.forward();
   }
 
@@ -271,10 +282,13 @@ class _OverallBudgetBarState extends State<_OverallBudgetBar>
   void didUpdateWidget(_OverallBudgetBar old) {
     super.didUpdateWidget(old);
     if (old.percentage != widget.percentage) {
-      _animation = Tween<double>(
-        begin: _animation.value,
-        end: widget.percentage.clamp(0, 1),
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+      _animation =
+          Tween<double>(
+            begin: _animation.value,
+            end: widget.percentage.clamp(0, 1),
+          ).animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+          );
       _controller.forward(from: 0);
     }
   }
@@ -323,9 +337,9 @@ class _OverallBudgetBarState extends State<_OverallBudgetBar>
             const SizedBox(height: 6),
             Text(
               '${(_animation.value * 100).toStringAsFixed(0)}% used',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: _barColor,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: _barColor),
             ),
           ],
         );
@@ -341,7 +355,9 @@ class _CategoryCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showCats = ['Food', 'Transport', 'Shopping', 'Bills'];
-    final filtered = budgets.where((b) => showCats.contains(b.categoryId)).toList();
+    final filtered = budgets
+        .where((b) => showCats.contains(b.categoryId))
+        .toList();
 
     return SizedBox(
       height: 110,
@@ -350,52 +366,57 @@ class _CategoryCards extends StatelessWidget {
         children: filtered.asMap().entries.map((entry) {
           final b = entry.value;
           final color = Color(
-            int.parse(AppUtils.getCategoryColor(b.categoryId).replaceAll('#', '0xFF')),
+            int.parse(
+              AppUtils.getCategoryColor(b.categoryId).replaceAll('#', '0xFF'),
+            ),
           );
           return Container(
-            width: 120,
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Theme.of(context).dividerColor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      AppConstants.categoryIcons[b.categoryId] ?? '💸',
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    BudgetRing(
-                      percentage: b.percentage,
-                      size: 36,
-                      strokeWidth: 4,
-                      centerText: '${(b.percentage * 100).toInt()}%',
-                    ),
-                  ],
+                width: 120,
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
-                const Spacer(),
-                Text(
-                  b.categoryId,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppConstants.categoryIcons[b.categoryId] ?? '💸',
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                        BudgetRing(
+                          percentage: b.percentage,
+                          size: 36,
+                          strokeWidth: 4,
+                          centerText: '${(b.percentage * 100).toInt()}%',
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Text(
+                      b.categoryId,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Theme.of(context).hintColor,
                       ),
-                ),
-                Text(
-                  AppUtils.formatAmount(b.spent),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    ),
+                    Text(
+                      AppUtils.formatAmount(b.spent),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: color,
                         fontSize: 13,
                       ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ).animate().fadeIn(delay: (entry.key * 80).ms).slideX(begin: 0.2, end: 0);
+              )
+              .animate()
+              .fadeIn(delay: (entry.key * 80).ms)
+              .slideX(begin: 0.2, end: 0);
         }).toList(),
       ),
     );
@@ -413,7 +434,9 @@ class _PauseModeBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.electricBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.electricBlue.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.electricBlue.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -426,8 +449,8 @@ class _PauseModeBanner extends StatelessWidget {
                 Text(
                   'Cooling period active',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppColors.electricBlue,
-                      ),
+                    color: AppColors.electricBlue,
+                  ),
                 ),
                 Text(
                   remainingText,
@@ -455,8 +478,8 @@ class _EmptyTransactions extends StatelessWidget {
           Text(
             AppConstants.emptyStateMessages.first,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).hintColor,
-                ),
+              color: Theme.of(context).hintColor,
+            ),
             textAlign: TextAlign.center,
           ),
         ],

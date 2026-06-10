@@ -1,0 +1,4 @@
+## 2024-05-20 - Enforce payload limits and sanitize error messages
+**Vulnerability:** The `readBody` function lacked payload size limits, making the server vulnerable to Denial of Service (DoS) via memory exhaustion from excessively large requests. Error handling exposed upstream API failure details directly to the client via `e.message`.
+**Learning:** Node.js `req.on('data')` streams data unbounded by default; without a hard limit, a malicious client can continuously send data. Uncaught errors from third-party API wrappers must be sanitized before being returned as HTTP 500 responses to avoid leaking sensitive structural or internal details.
+**Prevention:** Always track `bytes` received in stream event handlers, calling `req.destroy()` and rejecting if limits are exceeded. Sanitize top-level catch blocks by logging the true error internally and returning generic messages like 'Internal Server Error' to clients.

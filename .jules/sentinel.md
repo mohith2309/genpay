@@ -1,0 +1,4 @@
+## 2024-05-18 - Prevent Unbounded Payload DoS and Information Leakage
+**Vulnerability:** Node.js `server.js` was reading unlimited incoming request body chunks, exposing it to memory exhaustion attacks (DoS). Additionally, the global error handler blindly returned error messages to the client, which could leak internal pathing or upstream API error formats.
+**Learning:** Raw Node.js stream handlers require explicit chunk size enforcement, otherwise a malicious client can continuously send data. The `req.destroy()` method efficiently terminates an oversized request stream. Additionally, global catch blocks for 500 status codes must decouple the internal error log from the user-facing response payload.
+**Prevention:** Always implement a `MAX_BYTES` counter inside `req.on('data')` streams. Always mask HTTP 500 error messages behind a generic fallback string in public-facing APIs.

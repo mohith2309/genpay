@@ -19,10 +19,10 @@ final currentMonthTransactionsProvider = Provider<List<Transaction>>((ref) {
   return txnsAsync.when(
     data: (txns) {
       final now = DateTime.now();
+      // txns from transactionsProvider is already sorted
       return txns
           .where((t) => t.isApproved && AppUtils.isSameMonth(t.date, now) && !t.isSilent)
-          .toList()
-        ..sort((a, b) => b.date.compareTo(a.date));
+          .toList();
     },
     loading: () => [],
     error: (_, __) => [],
@@ -46,8 +46,8 @@ final spentByCategoryProvider = Provider<Map<String, double>>((ref) {
 final pendingSmsTransactionsProvider = Provider<List<Transaction>>((ref) {
   final txnsAsync = ref.watch(transactionsProvider);
   return txnsAsync.when(
-    data: (txns) => txns.where((t) => t.fromSms && !t.isApproved).toList()
-      ..sort((a, b) => b.date.compareTo(a.date)),
+    // txns from transactionsProvider is already sorted
+    data: (txns) => txns.where((t) => t.fromSms && !t.isApproved).toList(),
     loading: () => [],
     error: (_, __) => [],
   );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
 
@@ -45,6 +46,7 @@ class _MoodPickerState extends State<MoodPicker> {
             final label = AppConstants.moodLabels[mood] ?? '';
             return GestureDetector(
               onTap: () {
+                HapticFeedback.selectionClick();
                 setState(() {
                   _selected = isSelected ? null : mood;
                 });
@@ -52,12 +54,17 @@ class _MoodPickerState extends State<MoodPicker> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.accent.withValues(alpha: 0.2) : Theme.of(context).colorScheme.surface,
+                  color: isSelected
+                      ? AppColors.accent.withValues(alpha: 0.2)
+                      : Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? AppColors.accent : Theme.of(context).dividerColor,
+                    color: isSelected
+                        ? AppColors.accent
+                        : Theme.of(context).dividerColor,
                     width: isSelected ? 1.5 : 1,
                   ),
                 ),
@@ -69,7 +76,9 @@ class _MoodPickerState extends State<MoodPicker> {
                     Text(
                       label,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: isSelected ? AppColors.accent : Theme.of(context).hintColor,
+                            color: isSelected
+                                ? AppColors.accent
+                                : Theme.of(context).hintColor,
                             fontSize: 11,
                           ),
                     ),

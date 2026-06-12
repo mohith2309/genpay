@@ -84,9 +84,20 @@ function send(res, status, obj) {
 }
 
 function readBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    let length = 0;
+    const MAX_PAYLOAD = 1024 * 1024; // 1MB
+
+    req.on('data', (c) => {
+      length += Buffer.byteLength(c);
+      if (length > MAX_PAYLOAD) {
+        req.destroy();
+        return reject(new Error('Payload Too Large'));
+      }
+      data += c;
+    });
+
     req.on('end', () => {
       try { resolve(data ? JSON.parse(data) : {}); }
       catch (_) { resolve({}); }
@@ -180,7 +191,10 @@ const server = http.createServer(async (req, res) => {
     return send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    if (e.message === 'Payload Too Large') {
+      return send(res, 413, { error: 'Payload Too Large' });
+    }
+    return send(res, 500, { error: 'Internal Server Error' });
   }
 });
 

@@ -1,0 +1,3 @@
+## 2026-06-13 - Enhanced Accessibility and Haptics for Custom Swipe Gestures
+**Learning:** In this project, horizontal swipe actions are implemented using custom GestureDetector instead of the standard Dismissible widget. This pattern makes these actions invisible to screen readers and lacks tactile feedback by default.
+**Action:** When implementing custom gestures, always wrap the component in 'Semantics' and use 'CustomSemanticsAction' to expose those gestures to accessibility tools. Additionally, use 'HapticFeedback' (lightImpact for snaps, mediumImpact for destructive actions) to provide physical confirmation of the gesture's success.

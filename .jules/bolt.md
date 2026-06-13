@@ -1,0 +1,3 @@
+## 2026-06-13 - Avoid redundant sorting in derived Riverpod providers
+**Learning:** Dart's `Iterable.where` preserves the original list order. If the base state provider emits a sorted list, derived providers that simply filter it with `where` do not need to call `.sort()` again. Calling it again introduces an unnecessary O(N log N) operation for every state update, which can be expensive for large lists.
+**Action:** When filtering a sorted base list in a derived provider, rely on the preserved order instead of sorting the result again.

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -44,10 +46,12 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
@@ -55,6 +59,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onRepeat() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
@@ -86,8 +91,10 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
           ? (details) {
               if (_dragOffset < -80) {
                 setState(() => _dragOffset = -160);
+                HapticFeedback.lightImpact();
               } else if (_dragOffset > 40) {
                 setState(() => _dragOffset = 80);
+                HapticFeedback.lightImpact();
               } else {
                 setState(() {
                   _dragOffset = 0;
@@ -106,10 +113,17 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
           widget.onTap?.call();
         }
       },
-      child: Stack(
-        children: [
-          // Background action buttons
-          if (_isRevealing || _dragOffset != 0) ...[
+      child: Semantics(
+        label: '${t.merchant}, ${AppUtils.formatCurrency(t.amount)}',
+        customSemanticsActions: {
+          CustomSemanticsAction(label: 'Delete'): _onDelete,
+          CustomSemanticsAction(label: 'Repeat'): _onRepeat,
+          CustomSemanticsAction(label: t.isSilent ? 'Unsilent' : 'Silent'): _onSilent,
+        },
+        child: Stack(
+          children: [
+            // Background action buttons
+            if (_isRevealing || _dragOffset != 0) ...[
             // Left actions (swipe left reveals): Delete + Silent
             Positioned.fill(
               child: Row(
@@ -290,7 +304,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
             ),
           ),
         ],
-      ),
+      ),),
     );
   }
 }
@@ -343,9 +357,12 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    return Semantics(
+      label: label,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
         width: 72,
         height: 64,
         decoration: BoxDecoration(
@@ -364,7 +381,7 @@ class _ActionButton extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      ),),
     );
   }
 }

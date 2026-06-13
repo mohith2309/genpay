@@ -1,0 +1,4 @@
+## 2024-05-18 - Payload Limit and Error Leakage
+**Vulnerability:** Missing maximum payload limit on Node.js backend POST endpoints, and returning raw upstream error messages (`e.message`) on 500 status.
+**Learning:** The lack of a byte limit exposed the server to memory exhaustion DoS attacks via unlimited `data` event accumulation. The 500 error returned `e.message` which leaked internal mechanisms/API errors directly to clients.
+**Prevention:** Always use `Buffer.byteLength()` in incoming request streams to accumulate chunk sizes and enforce a strict `MAX_PAYLOAD` limit. `req.destroy()` should be invoked to terminate problematic requests immediately. Sanitise 500 errors to just return generic messages like 'Internal Server Error' unless more detail is explicitly deemed safe and necessary for the client.

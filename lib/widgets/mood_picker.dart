@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
 
@@ -45,6 +46,7 @@ class _MoodPickerState extends State<MoodPicker> {
             final label = AppConstants.moodLabels[mood] ?? '';
             return GestureDetector(
               onTap: () {
+                HapticFeedback.selectionClick();
                 setState(() {
                   _selected = isSelected ? null : mood;
                 });

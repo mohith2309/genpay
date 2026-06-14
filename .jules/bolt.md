@@ -1,0 +1,3 @@
+## 2025-02-28 - Redundant list sorting in derived Riverpod providers
+**Learning:** Dart's `Iterable.where` and sequential map iteration/grouping (`Map.putIfAbsent`) preserve the base list's order. If a base Riverpod provider already sorts the list (e.g., `transactionsProvider` sorts by date descending), derived providers that filter or group these lists do not need to re-sort them.
+**Action:** Avoid redundant `.sort()` operations in derived Riverpod providers or grouped data structures if the base provider's list is already sorted. This prevents unnecessary O(N log N) operations on every state update.

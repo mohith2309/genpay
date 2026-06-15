@@ -38,7 +38,8 @@ final subscriptionsProvider = Provider<List<Subscription>>((ref) {
 
   final subs = <Subscription>[];
   byMerchant.forEach((merchant, txns) {
-    txns.sort((a, b) => b.date.compareTo(a.date));
+    // Base list is already sorted by date descending, and iteration preserves order.
+    // Thus the first element in the group is already the latest.
     final latest = txns.first;
     subs.add(Subscription(
       merchant: merchant,

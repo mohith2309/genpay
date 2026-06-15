@@ -1,0 +1,4 @@
+## 2024-05-24 - Payload Size Limit and Error Sanitization
+**Vulnerability:** The Node.js backend lacked a payload size limit for incoming requests, creating a risk for Denial of Service (DoS) attacks via memory exhaustion. Additionally, generic error responses leaked internal `e.message` details, which could expose upstream API secrets or infrastructure information.
+**Learning:** Raw request stream listeners (`req.on('data')`) will buffer data indefinitely unless explicitly limited. When mitigating DoS, terminating the connection with `req.destroy()` is an effective defense, although it may prevent an HTTP 413 response from being delivered to the attacker.
+**Prevention:** Always enforce strict payload size limits using `Buffer.byteLength()` and sanitize generic HTTP 500 error responses. Use defensive checks like `if (res.headersSent) return;` to prevent server crashes during complex error scenarios.

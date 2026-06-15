@@ -73,6 +73,7 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
 }
 
 function send(res, status, obj) {
+  if (res.headersSent) return;
   const body = JSON.stringify(obj);
   res.writeHead(status, {
     'Content-Type': 'application/json',
@@ -83,14 +84,25 @@ function send(res, status, obj) {
   res.end(body);
 }
 
+const MAX_PAYLOAD = 100 * 1024; // 100KB
+
 function readBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    let bytes = 0;
+    req.on('data', (c) => {
+      data += c;
+      bytes += Buffer.byteLength(c);
+      if (bytes > MAX_PAYLOAD) {
+        req.destroy();
+        reject(new Error('Payload Too Large'));
+      }
+    });
     req.on('end', () => {
       try { resolve(data ? JSON.parse(data) : {}); }
       catch (_) { resolve({}); }
     });
+    req.on('error', reject);
   });
 }
 
@@ -180,7 +192,10 @@ const server = http.createServer(async (req, res) => {
     return send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    if (e.message === 'Payload Too Large') {
+      return send(res, 413, { error: 'Payload Too Large' });
+    }
+    return send(res, 500, { error: 'Internal Server Error' });
   }
 });
 

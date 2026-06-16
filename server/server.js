@@ -73,20 +73,30 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
 }
 
 function send(res, status, obj) {
+  if (res.headersSent) return;
   const body = JSON.stringify(obj);
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    ...(status === 413 ? { 'Connection': 'close' } : {}),
   });
-  res.end(body);
+  res.end(body, () => {
+    if (status === 413 && res.req) res.req.destroy();
+  });
 }
 
 function readBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    req.on('data', (c) => {
+      data += c;
+      if (Buffer.byteLength(data) > 1024 * 1024) { // 1MB limit
+        req.pause();
+        reject(new Error('Payload Too Large'));
+      }
+    });
     req.on('end', () => {
       try { resolve(data ? JSON.parse(data) : {}); }
       catch (_) { resolve({}); }
@@ -140,6 +150,7 @@ async function nimChat(prompt, { temperature = 0.3, maxTokens = 600 } = {}) {
 
 // ── Router ───────────────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
+  res.req = req;
   if (req.method === 'OPTIONS') return send(res, 204, {});
 
   try {
@@ -180,7 +191,11 @@ const server = http.createServer(async (req, res) => {
     return send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    if (e.message === 'Payload Too Large') {
+      return send(res, 413, { error: 'Payload Too Large' });
+    }
+    // Mask internal error details from the client
+    return send(res, 500, { error: 'Internal Server Error' });
   }
 });
 

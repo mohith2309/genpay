@@ -72,7 +72,8 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
   });
 }
 
-function send(res, status, obj) {
+function send(res, status, obj, cb) {
+  if (res.headersSent) return;
   const body = JSON.stringify(obj);
   res.writeHead(status, {
     'Content-Type': 'application/json',
@@ -80,14 +81,31 @@ function send(res, status, obj) {
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   });
-  res.end(body);
+  res.end(body, cb);
 }
 
-function readBody(req) {
+function readBody(req, res) {
   return new Promise((resolve) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    let size = 0;
+    const limit = 100 * 1024; // 100KB limit
+
+    req.on('data', (c) => {
+      size += Buffer.byteLength(c);
+      if (size > limit) {
+        req.pause();
+        res.setHeader('Connection', 'close');
+        send(res, 413, { error: 'Payload Too Large' }, () => {
+          if (res.req) res.req.destroy();
+        });
+        resolve(null);
+      } else {
+        data += c;
+      }
+    });
+
     req.on('end', () => {
+      if (size > limit) return;
       try { resolve(data ? JSON.parse(data) : {}); }
       catch (_) { resolve({}); }
     });
@@ -153,7 +171,9 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/razorpay/order') {
-      const { amount, receipt } = await readBody(req);
+      const body = await readBody(req, res);
+      if (!body) return;
+      const { amount, receipt } = body;
       if (!amount || amount <= 0) return send(res, 400, { error: 'amount required' });
       const order = await createOrder(amount, receipt);
       return send(res, 200, {
@@ -165,13 +185,17 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/razorpay/verify') {
-      const { order_id, payment_id, signature } = await readBody(req);
+      const body = await readBody(req, res);
+      if (!body) return;
+      const { order_id, payment_id, signature } = body;
       const valid = verifySignature(order_id, payment_id, signature);
       return send(res, 200, { valid });
     }
 
     if (req.method === 'POST' && req.url === '/ai/chat') {
-      const { prompt, temperature, maxTokens } = await readBody(req);
+      const body = await readBody(req, res);
+      if (!body) return;
+      const { prompt, temperature, maxTokens } = body;
       if (!prompt) return send(res, 400, { error: 'prompt required' });
       const text = await nimChat(prompt, { temperature, maxTokens });
       return send(res, 200, { text });
@@ -180,7 +204,7 @@ const server = http.createServer(async (req, res) => {
     return send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    return send(res, 500, { error: 'Internal Server Error' });
   }
 });
 

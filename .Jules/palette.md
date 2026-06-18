@@ -1,0 +1,3 @@
+## 2025-02-18 - Discoverability of Custom Swipe Actions in Flutter
+**Learning:** Flutter's custom `GestureDetector` implementations (e.g., custom swipe-to-reveal cards) are completely invisible to screen readers by default. Standard tools like `Dismissible` handle this automatically, but custom interactive widgets require explicit wrapping with `Semantics` and the mapping of `customSemanticsActions` to expose the hidden functionalities (like delete or mute) to the screen reader's action menu.
+**Action:** Whenever building or modifying a custom interactive widget (especially one relying on drag or swipe gestures), always ensure it is wrapped in a `Semantics` node and all hidden interactions are explicitly mapped via `customSemanticsActions`.

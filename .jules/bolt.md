@@ -1,0 +1,3 @@
+## 2024-06-19 - Avoid redundant sorting in derived Riverpod providers
+**Learning:** Dart's `Iterable.where` and mapping operations (like sequential group insertion into a `LinkedHashMap`) preserve the order of the source list. Derived Riverpod providers were redundantly calling `.sort()` on every state recalculation even though the base `transactionsProvider` already maintained strict descending date order. This caused O(N log N) overhead on every transaction insert/update.
+**Action:** When creating derived providers (filtering or mapping) from a base list that is already sorted, rely on the language's order-preserving methods (`where`, sequential loop insertion) and omit redundant `.sort()` calls.

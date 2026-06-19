@@ -38,7 +38,7 @@ final subscriptionsProvider = Provider<List<Subscription>>((ref) {
 
   final subs = <Subscription>[];
   byMerchant.forEach((merchant, txns) {
-    txns.sort((a, b) => b.date.compareTo(a.date));
+    // Bolt optimization: base provider is already sorted; map insertion preserves order
     final latest = txns.first;
     subs.add(Subscription(
       merchant: merchant,

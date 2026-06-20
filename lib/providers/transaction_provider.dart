@@ -10,7 +10,8 @@ final transactionBoxProvider = FutureProvider<Box<Transaction>>((ref) async {
   return Hive.openBox<Transaction>(AppConstants.transactionsBox);
 });
 
-final transactionsProvider = StateNotifierProvider<TransactionNotifier, AsyncValue<List<Transaction>>>(
+final transactionsProvider =
+    StateNotifierProvider<TransactionNotifier, AsyncValue<List<Transaction>>>(
   (ref) => TransactionNotifier(),
 );
 
@@ -19,10 +20,12 @@ final currentMonthTransactionsProvider = Provider<List<Transaction>>((ref) {
   return txnsAsync.when(
     data: (txns) {
       final now = DateTime.now();
+      // txns is already sorted by date in TransactionNotifier.
+      // Iterable.where preserves order, so explicit sort is redundant.
       return txns
-          .where((t) => t.isApproved && AppUtils.isSameMonth(t.date, now) && !t.isSilent)
-          .toList()
-        ..sort((a, b) => b.date.compareTo(a.date));
+          .where((t) =>
+              t.isApproved && AppUtils.isSameMonth(t.date, now) && !t.isSilent)
+          .toList();
     },
     loading: () => [],
     error: (_, __) => [],
@@ -46,8 +49,9 @@ final spentByCategoryProvider = Provider<Map<String, double>>((ref) {
 final pendingSmsTransactionsProvider = Provider<List<Transaction>>((ref) {
   final txnsAsync = ref.watch(transactionsProvider);
   return txnsAsync.when(
-    data: (txns) => txns.where((t) => t.fromSms && !t.isApproved).toList()
-      ..sort((a, b) => b.date.compareTo(a.date)),
+    // txns is already sorted by date in TransactionNotifier.
+    // Iterable.where preserves order, so explicit sort is redundant.
+    data: (txns) => txns.where((t) => t.fromSms && !t.isApproved).toList(),
     loading: () => [],
     error: (_, __) => [],
   );
@@ -86,7 +90,9 @@ class TransactionNotifier extends StateNotifier<AsyncValue<List<Transaction>>> {
 
   Future<void> addTransaction(Transaction transaction) async {
     await _box?.put(transaction.id, transaction);
-    if (transaction.isApproved && !transaction.isSilent && transaction.vaultSaved > 0) {
+    if (transaction.isApproved &&
+        !transaction.isSilent &&
+        transaction.vaultSaved > 0) {
       await _vaultService.addRoundup(transaction);
     }
   }

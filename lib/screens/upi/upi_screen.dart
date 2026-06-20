@@ -27,8 +27,9 @@ import 'request_money_screen.dart';
 
 final upiTransactionsProvider = Provider<List<Transaction>>((ref) {
   final all = ref.watch(transactionsProvider).asData?.value ?? [];
-  return all.where((t) => t.paymentMethod == 'UPI' && t.isApproved).toList()
-    ..sort((a, b) => b.date.compareTo(a.date));
+  // all is already sorted by date in TransactionNotifier.
+  // Iterable.where preserves order, so explicit sort is redundant.
+  return all.where((t) => t.paymentMethod == 'UPI' && t.isApproved).toList();
 });
 
 final upiMonthSpendProvider = Provider<double>((ref) {
@@ -84,8 +85,7 @@ class UpiScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () =>
-                            _push(context, const BankAccountsScreen()),
+                        onTap: () => _push(context, const BankAccountsScreen()),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -103,7 +103,8 @@ class UpiScreen extends ConsumerWidget {
                                       ?.copyWith(color: AppColors.neonGreen),
                                 ),
                                 Icon(Icons.expand_more,
-                                    size: 14, color: Theme.of(context).hintColor),
+                                    size: 14,
+                                    color: Theme.of(context).hintColor),
                               ],
                             ),
                           ],
@@ -125,8 +126,8 @@ class UpiScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                   child: GestureDetector(
-                    onTap: () => _push(
-                        context, const RequestMoneyScreen(initialTab: 1)),
+                    onTap: () =>
+                        _push(context, const RequestMoneyScreen(initialTab: 1)),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 12),
@@ -184,7 +185,8 @@ class UpiScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(AppRadius.card),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.22),
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.22),
                           blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),
@@ -340,7 +342,8 @@ class UpiScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Theme.of(context).dividerColor),
+                        border:
+                            Border.all(color: Theme.of(context).dividerColor),
                       ),
                       child: Row(
                         children: [
@@ -361,13 +364,11 @@ class UpiScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text('Subscriptions & AutoPay',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall),
+                                    style:
+                                        Theme.of(context).textTheme.titleSmall),
                                 Text(
                                   '${subs.length} active · ${AppUtils.formatCurrency(subsCost)}/mo',
-                                  style:
-                                      Theme.of(context).textTheme.bodySmall,
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ],
                             ),
@@ -423,8 +424,8 @@ class UpiScreen extends ConsumerWidget {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => TransactionDetailScreen(
-                              transaction: upiTxns[i]),
+                          builder: (_) =>
+                              TransactionDetailScreen(transaction: upiTxns[i]),
                         ),
                       ),
                     ).animate().fadeIn(delay: (i * 25).ms),
@@ -604,8 +605,7 @@ class _PeopleRow extends StatelessWidget {
                   return _PersonAvatar.add(onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const PayToUpiScreen()),
+                      MaterialPageRoute(builder: (_) => const PayToUpiScreen()),
                     );
                   });
                 }
@@ -615,8 +615,8 @@ class _PeopleRow extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => SendMoneyScreen(
-                          payeeVpa: p.upiId, payeeName: p.name),
+                      builder: (_) =>
+                          SendMoneyScreen(payeeVpa: p.upiId, payeeName: p.name),
                     ),
                   ),
                 );
@@ -642,7 +642,8 @@ class _PersonAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isAdd ? Theme.of(context).hintColor : Color(payee!.avatarColor);
+    final color =
+        isAdd ? Theme.of(context).hintColor : Color(payee!.avatarColor);
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -661,18 +662,16 @@ class _PersonAvatar extends StatelessWidget {
               child: isAdd
                   ? Icon(Icons.add, color: Theme.of(context).hintColor)
                   : Text(payee!.initials,
-                      style: TextStyle(
-                          color: color, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(color: color, fontWeight: FontWeight.w700)),
             ),
             const SizedBox(height: 6),
             Text(
               isAdd ? 'New' : payee!.name.split(' ').first,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: Theme.of(context).colorScheme.onSurface, fontSize: 11),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface, fontSize: 11),
             ),
           ],
         ),

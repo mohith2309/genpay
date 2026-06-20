@@ -1,0 +1,3 @@
+## 2026-06-20 - Enhance TransactionCard accessibility and haptics
+**Learning:** Custom drag-to-reveal gestures in Flutter are invisible to screen readers unless explicitly bridged using the Semantics widget and CustomSemanticsAction. Adding standardized haptic feedback (lightImpact for snaps, mediumImpact for destructive actions) significantly enhances the "physical" feel of these gestures.
+**Action:** Always wrap custom gesture-based interactive components in Semantics and provide CustomSemanticsAction for any hidden or complex gestures. Apply standardized haptic feedback to provide tactile confirmation for all primary interactions.

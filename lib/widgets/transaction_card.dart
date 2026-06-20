@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -73,9 +74,17 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
     final categoryColor = AppUtils.getCategoryColor(t.category);
     final color = Color(int.parse(categoryColor.replaceAll('#', '0xFF')));
 
-    return GestureDetector(
-      onHorizontalDragUpdate: widget.showSwipeActions
-          ? (details) {
+    return Semantics(
+      customSemanticsActions: widget.showSwipeActions
+          ? {
+              CustomSemanticsAction(label: t.isSilent ? 'Unsilent' : 'Silent'): _onSilent,
+              const CustomSemanticsAction(label: 'Delete'): _onDelete,
+              const CustomSemanticsAction(label: 'Repeat'): _onRepeat,
+            }
+          : null,
+      child: GestureDetector(
+        onHorizontalDragUpdate: widget.showSwipeActions
+            ? (details) {
               setState(() {
                 _dragOffset = (_dragOffset + details.delta.dx).clamp(-160.0, 80.0);
                 _isRevealing = true;
@@ -96,18 +105,18 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
               }
             }
           : null,
-      onTap: () {
-        if (_dragOffset != 0) {
-          setState(() {
-            _dragOffset = 0;
-            _isRevealing = false;
-          });
-        } else {
-          widget.onTap?.call();
-        }
-      },
-      child: Stack(
-        children: [
+        onTap: () {
+          if (_dragOffset != 0) {
+            setState(() {
+              _dragOffset = 0;
+              _isRevealing = false;
+            });
+          } else {
+            widget.onTap?.call();
+          }
+        },
+        child: Stack(
+          children: [
           // Background action buttons
           if (_isRevealing || _dragOffset != 0) ...[
             // Left actions (swipe left reveals): Delete + Silent
@@ -289,7 +298,8 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
               ),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

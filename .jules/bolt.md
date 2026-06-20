@@ -1,0 +1,3 @@
+## 2024-05-18 - Remove redundant transaction sorting in derived providers
+**Learning:** Dart's `Iterable.where` preserves the original list order. For Riverpod providers that derive data from a base provider (like `transactionsProvider`) that is already sorted, explicitly sorting the derived list is a redundant operation and unnecessary overhead.
+**Action:** Always verify if a base Riverpod provider is already sorted before adding a `.sort()` operation to any derived providers filtering that data with `where`. Avoid redundant sorting unless the sort key changes or complex map grouping does not guarantee order preservation.

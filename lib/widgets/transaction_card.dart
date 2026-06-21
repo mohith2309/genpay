@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -44,20 +46,25 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
   void _onRepeat() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
@@ -85,8 +92,10 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
       onHorizontalDragEnd: widget.showSwipeActions
           ? (details) {
               if (_dragOffset < -80) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = -160);
               } else if (_dragOffset > 40) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = 80);
               } else {
                 setState(() {
@@ -106,9 +115,15 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
           widget.onTap?.call();
         }
       },
-      child: Stack(
-        children: [
-          // Background action buttons
+      child: Semantics(
+        customSemanticsActions: {
+          const CustomSemanticsAction(label: 'Delete'): _onDelete,
+          CustomSemanticsAction(label: t.isSilent ? 'Unsilent' : 'Silent'): _onSilent,
+          const CustomSemanticsAction(label: 'Repeat'): _onRepeat,
+        },
+        child: Stack(
+          children: [
+            // Background action buttons
           if (_isRevealing || _dragOffset != 0) ...[
             // Left actions (swipe left reveals): Delete + Silent
             Positioned.fill(
@@ -238,7 +253,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                               _UpiAppChip(app: t.upiApp!),
                             ] else if (t.paymentMethod == 'UPI') ...[
                               const SizedBox(width: 6),
-                              _UpiAppChip(app: 'UPI'),
+                              const _UpiAppChip(app: 'UPI'),
                             ],
                             if (t.mood != null) ...[
                               const SizedBox(width: 4),
@@ -289,7 +304,8 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
               ),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

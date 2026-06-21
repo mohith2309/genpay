@@ -1,0 +1,3 @@
+## 2024-06-21 - Accessible Custom Swipe Gestures
+**Learning:** Custom swipe gestures (like drag-to-reveal backgrounds on cards) are completely invisible to screen readers unless explicitly mapped. Standard `GestureDetector` drag events do not automatically surface their implicit UI consequences.
+**Action:** Always wrap custom gesture components in `Semantics` and use `customSemanticsActions` (with `CustomSemanticsAction`) to expose the hidden actions (e.g., Delete, Repeat) to assistive technologies. Ensure actions are dynamically enabled/disabled if the gesture capability itself is conditional.

@@ -73,24 +73,38 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
 }
 
 function send(res, status, obj) {
+  if (res.headersSent) return;
   const body = JSON.stringify(obj);
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    ...(status === 413 ? { 'Connection': 'close' } : {}),
   });
-  res.end(body);
+  res.end(body, () => {
+    if (status === 413) res.req.destroy();
+  });
 }
 
 function readBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    let size = 0;
+    const MAX_SIZE = 1048576; // 1MB limit
+    req.on('data', (c) => {
+      size += Buffer.byteLength(c);
+      if (size > MAX_SIZE) {
+        req.pause();
+        return reject(new Error('PayloadTooLarge'));
+      }
+      data += c;
+    });
     req.on('end', () => {
       try { resolve(data ? JSON.parse(data) : {}); }
       catch (_) { resolve({}); }
     });
+    req.on('error', reject);
   });
 }
 
@@ -180,7 +194,10 @@ const server = http.createServer(async (req, res) => {
     return send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    if (e.message === 'PayloadTooLarge') {
+      return send(res, 413, { error: 'Payload too large' });
+    }
+    return send(res, 500, { error: 'Internal server error' });
   }
 });
 

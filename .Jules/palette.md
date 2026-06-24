@@ -1,0 +1,3 @@
+## 2024-06-24 - Accessibility for Custom Swipe Gestures
+**Learning:** When implementing custom drag-to-reveal components using `GestureDetector` instead of the standard `Dismissible`, the interactive actions (like swipe-to-delete) become invisible to screen readers. Furthermore, dynamic labels for state-toggling actions (e.g., Silent/Unsilent) cannot be declared as `const` inside the semantics map to avoid linter errors.
+**Action:** Always wrap custom gesture components in a `Semantics` widget and map the equivalent functionality using `customSemanticsActions`. Use `const CustomSemanticsAction` for static labels, but define dynamic labels conditionally.

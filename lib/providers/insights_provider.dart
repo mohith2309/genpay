@@ -13,8 +13,11 @@ final insightsProvider = FutureProvider<GeminiInsightResult>((ref) async {
   return txnsAsync.when(
     data: (txns) async {
       final now = DateTime.now();
-      final recent = txns.where((t) =>
-          t.isApproved && t.date.isAfter(now.subtract(const Duration(days: 30)))).toList();
+      final recent = txns
+          .where((t) =>
+              t.isApproved &&
+              t.date.isAfter(now.subtract(const Duration(days: 30))))
+          .toList();
       return gemini.generateInsights(recent);
     },
     loading: () async => GeminiInsightResult(
@@ -56,9 +59,11 @@ FutureProjection _calculateProjection(List<Transaction> transactions) {
     byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
   }
 
-  final sortedCats = (byCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value)));
-  final biggestCategory = sortedCats.isNotEmpty ? sortedCats.first.key : 'Other';
-  final biggestAmount = sortedCats.isNotEmpty ? sortedCats.first.value : 0.0;
+  final topCategory = byCategory.entries.isNotEmpty
+      ? byCategory.entries.reduce((a, b) => a.value > b.value ? a : b)
+      : null;
+  final biggestCategory = topCategory?.key ?? 'Other';
+  final biggestAmount = topCategory?.value ?? 0.0;
 
   // What saving 2x/week on top category would save
   final potentialSaving = biggestAmount * 0.2;
@@ -96,7 +101,8 @@ Map<int, double> _calculateDayOfWeekSpending(List<Transaction> txns) {
   final result = <int, double>{};
   for (final entry in byDay.entries) {
     // Average daily spend for that weekday
-    result[entry.key] = entry.value.fold(0.0, (a, b) => a + b) / entry.value.length;
+    result[entry.key] =
+        entry.value.fold(0.0, (a, b) => a + b) / entry.value.length;
   }
   return result;
 }
@@ -148,7 +154,8 @@ final moodCorrelationsProvider = Provider<List<MoodCorrelation>>((ref) {
 });
 
 List<MoodCorrelation> _calculateMoodCorrelations(List<Transaction> txns) {
-  final withMood = txns.where((t) => t.mood != null && t.mood!.isNotEmpty && t.isApproved);
+  final withMood =
+      txns.where((t) => t.mood != null && t.mood!.isNotEmpty && t.isApproved);
   final byMood = <String, List<Transaction>>{};
 
   for (final t in withMood) {
@@ -156,13 +163,15 @@ List<MoodCorrelation> _calculateMoodCorrelations(List<Transaction> txns) {
   }
 
   return byMood.entries.map((entry) {
-    final avgSpend = entry.value.fold(0.0, (s, t) => s + t.amount) / entry.value.length;
+    final avgSpend =
+        entry.value.fold(0.0, (s, t) => s + t.amount) / entry.value.length;
     final catCount = <String, int>{};
     for (final t in entry.value) {
       catCount[t.category] = (catCount[t.category] ?? 0) + 1;
     }
-    final topCat = (catCount.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
-        .firstOrNull?.key ?? 'Other';
+    final topCat = catCount.entries.isNotEmpty
+        ? catCount.entries.reduce((a, b) => a.value > b.value ? a : b).key
+        : 'Other';
 
     return MoodCorrelation(
       mood: entry.key,

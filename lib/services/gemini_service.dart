@@ -217,7 +217,8 @@ Respond in JSON only (no markdown):
     );
   }
 
-  Future<GeminiInsightResult> generateInsights(List<Transaction> transactions) async {
+  Future<GeminiInsightResult> generateInsights(
+      List<Transaction> transactions) async {
     if (transactions.isEmpty) {
       return GeminiInsightResult(
         patterns: ['Add transactions to get insights'],
@@ -235,7 +236,8 @@ Respond in JSON only (no markdown):
     // Summarize transactions for prompt (keep it short to save tokens)
     final summary = _summarizeForPrompt(transactions);
 
-    final prompt = '''You are GenPay, a snarky but helpful AI financial advisor for Indian users.
+    final prompt =
+        '''You are GenPay, a snarky but helpful AI financial advisor for Indian users.
 Analyze this spending summary for the current month:
 $summary
 
@@ -269,7 +271,8 @@ Be specific with ₹ amounts. Use Indian context. Be slightly roasting but helpf
 
   String _summarizeForPrompt(List<Transaction> txns) {
     final now = DateTime.now();
-    final thisMonth = txns.where((t) => t.date.month == now.month && t.date.year == now.year);
+    final thisMonth =
+        txns.where((t) => t.date.month == now.month && t.date.year == now.year);
 
     final byCategory = <String, double>{};
     for (final t in thisMonth) {
@@ -290,7 +293,9 @@ Be specific with ₹ amounts. Use Indian context. Be slightly roasting but helpf
 
   GeminiInsightResult _generateLocalInsights(List<Transaction> txns) {
     final now = DateTime.now();
-    final thisMonth = txns.where((t) => t.date.month == now.month && t.date.year == now.year).toList();
+    final thisMonth = txns
+        .where((t) => t.date.month == now.month && t.date.year == now.year)
+        .toList();
     if (thisMonth.isEmpty) {
       return GeminiInsightResult(
         patterns: [AppConstants.noInsights],
@@ -306,7 +311,8 @@ Be specific with ₹ amounts. Use Indian context. Be slightly roasting but helpf
       byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
     }
 
-    final topCat = (byCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).first;
+    final topCat =
+        byCategory.entries.reduce((a, b) => a.value > b.value ? a : b);
     final total = byCategory.values.fold(0.0, (a, b) => a + b);
 
     return GeminiInsightResult(
@@ -314,24 +320,34 @@ Be specific with ₹ amounts. Use Indian context. Be slightly roasting but helpf
         '${topCat.key} is eating ${((topCat.value / total) * 100).toStringAsFixed(0)}% of your budget',
         'You\'ve made ${thisMonth.length} transactions this month',
       ],
-      predictions: ['You\'re on track to spend ₹${(total / now.day * _daysInMonth(now)).toStringAsFixed(0)} this month'],
-      tips: ['Cut ${topCat.key} spending by 20% to save ₹${(topCat.value * 0.2).toStringAsFixed(0)}'],
+      predictions: [
+        'You\'re on track to spend ₹${(total / now.day * _daysInMonth(now)).toStringAsFixed(0)} this month'
+      ],
+      tips: [
+        'Cut ${topCat.key} spending by 20% to save ₹${(topCat.value * 0.2).toStringAsFixed(0)}'
+      ],
       moodCorrelation: '',
       biggestWaste: '${topCat.key}: ₹${topCat.value.toStringAsFixed(0)}',
     );
   }
 
-  Future<String> getSmartSuggestion(double budget, double spent, String category) async {
+  Future<String> getSmartSuggestion(
+      double budget, double spent, String category) async {
     if (!_hasApiKey) {
       final pct = budget > 0 ? (spent / budget * 100).toInt() : 0;
       if (pct >= 100) return AppConstants.overBudget100Messages.first;
-      if (pct >= 90) return AppConstants.overBudget90Messages.first.replaceAll('{remaining}', '₹${(budget - spent).toStringAsFixed(0)}');
-      if (pct >= 80) return AppConstants.overBudget80Messages.first.replaceAll('{remaining}', '₹${(budget - spent).toStringAsFixed(0)}');
+      if (pct >= 90)
+        return AppConstants.overBudget90Messages.first.replaceAll(
+            '{remaining}', '₹${(budget - spent).toStringAsFixed(0)}');
+      if (pct >= 80)
+        return AppConstants.overBudget80Messages.first.replaceAll(
+            '{remaining}', '₹${(budget - spent).toStringAsFixed(0)}');
       return 'You\'ve spent ₹${spent.toStringAsFixed(0)} of ₹${budget.toStringAsFixed(0)} in $category.';
     }
 
     final pct = budget > 0 ? (spent / budget * 100).toInt() : 0;
-    final prompt = '''For an Indian user who has spent ₹${spent.toStringAsFixed(0)} of ₹${budget.toStringAsFixed(0)} ($pct%) in $category this month.
+    final prompt =
+        '''For an Indian user who has spent ₹${spent.toStringAsFixed(0)} of ₹${budget.toStringAsFixed(0)} ($pct%) in $category this month.
 Give ONE short roasting-but-helpful suggestion (max 80 chars, Indian context, use ₹).''';
 
     final response = await _callGemini(prompt);

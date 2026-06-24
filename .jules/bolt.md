@@ -1,0 +1,3 @@
+## 2024-11-20 - Replace O(N log N) Sorts with O(N) Iteration for Max Element Extraction
+**Learning:** In Dart, sorting an entire collection (like a list of Map entries) to extract just the maximum or minimum element is an anti-pattern. `.sort()` has a time complexity of O(N log N) and often requires creating a new list (e.g., via `.toList()`), leading to unnecessary memory allocations and redundant processing.
+**Action:** Use an O(N) iteration method, such as `.reduce()` or `.fold()`, to find the target element in a single pass without sorting or allocating a new list. This improves CPU efficiency and reduces garbage collection pressure.

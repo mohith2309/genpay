@@ -73,21 +73,36 @@ function httpsJson(urlStr, { method = 'POST', headers = {}, body } = {}) {
 }
 
 function send(res, status, obj) {
+  if (res.headersSent) return;
   const body = JSON.stringify(obj);
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    ...(status === 413 ? { 'Connection': 'close' } : {}),
   });
-  res.end(body);
+  res.end(body, () => {
+    if (status === 413) res.req.destroy();
+  });
 }
 
-function readBody(req) {
+function readBody(req, res) {
   return new Promise((resolve) => {
     let data = '';
-    req.on('data', (c) => (data += c));
+    let size = 0;
+    req.on('data', (c) => {
+      size += Buffer.byteLength(c);
+      if (size > 100000) { // 100KB limit
+        req.pause();
+        send(res, 413, { error: 'Payload too large' });
+        resolve({});
+        return;
+      }
+      data += c;
+    });
     req.on('end', () => {
+      if (size > 100000) return;
       try { resolve(data ? JSON.parse(data) : {}); }
       catch (_) { resolve({}); }
     });
@@ -153,7 +168,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/razorpay/order') {
-      const { amount, receipt } = await readBody(req);
+      const { amount, receipt } = await readBody(req, res);
       if (!amount || amount <= 0) return send(res, 400, { error: 'amount required' });
       const order = await createOrder(amount, receipt);
       return send(res, 200, {
@@ -165,13 +180,13 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/razorpay/verify') {
-      const { order_id, payment_id, signature } = await readBody(req);
+      const { order_id, payment_id, signature } = await readBody(req, res);
       const valid = verifySignature(order_id, payment_id, signature);
       return send(res, 200, { valid });
     }
 
     if (req.method === 'POST' && req.url === '/ai/chat') {
-      const { prompt, temperature, maxTokens } = await readBody(req);
+      const { prompt, temperature, maxTokens } = await readBody(req, res);
       if (!prompt) return send(res, 400, { error: 'prompt required' });
       const text = await nimChat(prompt, { temperature, maxTokens });
       return send(res, 200, { text });
@@ -180,7 +195,7 @@ const server = http.createServer(async (req, res) => {
     return send(res, 404, { error: 'not found' });
   } catch (e) {
     console.error('✗', e.message);
-    return send(res, 500, { error: e.message });
+    return send(res, 500, { error: 'Internal Server Error' });
   }
 });
 

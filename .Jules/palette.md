@@ -1,0 +1,3 @@
+## 2026-06-26 - Added Semantics and HapticFeedback to TransactionCard
+**Learning:** In custom swipe-to-reveal components, mapping visual drag gestures to screen reader actions requires wrapping the element in `Semantics` and populating `customSemanticsActions`. This ensures screen reader users aren't left out of complex visual gestures. Additionally, mapping varying levels of haptic feedback (light for snapping, medium/selection for triggers) improves tactile accessibility and user confidence in custom gestures.
+**Action:** Always provide explicit `Semantics` fallback actions for any custom-built touch or drag interactions. Integrate haptic feedback early to give tactile weight to interactive state transitions.

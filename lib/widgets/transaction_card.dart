@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -44,20 +46,29 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
+    setState(() {
+      _dragOffset = 0;
+      _isRevealing = false;
+    });
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
   void _onRepeat() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
@@ -85,8 +96,10 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
       onHorizontalDragEnd: widget.showSwipeActions
           ? (details) {
               if (_dragOffset < -80) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = -160);
               } else if (_dragOffset > 40) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = 80);
               } else {
                 setState(() {
@@ -116,7 +129,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                 children: [
                   const Spacer(),
                   _ActionButton(
-                    icon: Icons.volume_off,
+                    icon: t.isSilent ? Icons.volume_up : Icons.volume_off,
                     label: t.isSilent ? 'Unsilent' : 'Silent',
                     color: AppColors.electricBlue,
                     onTap: _onSilent,
@@ -147,9 +160,17 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
             ),
           ],
           // Card content
-          Transform.translate(
-            offset: Offset(_dragOffset, 0),
-            child: Container(
+          Semantics(
+            customSemanticsActions: widget.showSwipeActions
+                ? {
+                    CustomSemanticsAction(label: t.isSilent ? 'Unsilent' : 'Silent'): _onSilent,
+                    const CustomSemanticsAction(label: 'Delete'): _onDelete,
+                    const CustomSemanticsAction(label: 'Repeat'): _onRepeat,
+                  }
+                : null,
+            child: Transform.translate(
+              offset: Offset(_dragOffset, 0),
+              child: Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -238,7 +259,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                               _UpiAppChip(app: t.upiApp!),
                             ] else if (t.paymentMethod == 'UPI') ...[
                               const SizedBox(width: 6),
-                              _UpiAppChip(app: 'UPI'),
+                              const _UpiAppChip(app: 'UPI'),
                             ],
                             if (t.mood != null) ...[
                               const SizedBox(width: 4),
@@ -289,8 +310,9 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    ),
     );
   }
 }

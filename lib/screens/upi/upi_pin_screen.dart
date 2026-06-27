@@ -78,6 +78,7 @@ class _UpiPinScreenState extends State<UpiPinScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.close),
+                    tooltip: 'Close',
                     onPressed: () => Navigator.pop(context, false),
                   ),
                   const SizedBox(width: 4),

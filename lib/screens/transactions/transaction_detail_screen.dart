@@ -36,6 +36,7 @@ class TransactionDetailScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Edit transaction',
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(

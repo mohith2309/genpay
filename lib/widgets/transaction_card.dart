@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -44,20 +46,25 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
   void _onRepeat() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
@@ -73,40 +80,42 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
     final categoryColor = AppUtils.getCategoryColor(t.category);
     final color = Color(int.parse(categoryColor.replaceAll('#', '0xFF')));
 
-    return GestureDetector(
-      onHorizontalDragUpdate: widget.showSwipeActions
-          ? (details) {
-              setState(() {
-                _dragOffset = (_dragOffset + details.delta.dx).clamp(-160.0, 80.0);
-                _isRevealing = true;
-              });
+    return Semantics(
+      customSemanticsActions: widget.showSwipeActions
+          ? {
+              CustomSemanticsAction(label: t.isSilent ? 'Unsilent' : 'Silent'): _onSilent,
+              const CustomSemanticsAction(label: 'Delete'): _onDelete,
+              const CustomSemanticsAction(label: 'Repeat'): _onRepeat,
             }
           : null,
-      onHorizontalDragEnd: widget.showSwipeActions
-          ? (details) {
-              if (_dragOffset < -80) {
-                setState(() => _dragOffset = -160);
-              } else if (_dragOffset > 40) {
-                setState(() => _dragOffset = 80);
-              } else {
+      child: GestureDetector(
+        onHorizontalDragUpdate: widget.showSwipeActions
+            ? (details) {
                 setState(() {
-                  _dragOffset = 0;
-                  _isRevealing = false;
+                  _dragOffset = (_dragOffset + details.delta.dx).clamp(-160.0, 80.0);
+                  _isRevealing = true;
                 });
               }
-            }
-          : null,
-      onTap: () {
-        if (_dragOffset != 0) {
-          setState(() {
-            _dragOffset = 0;
-            _isRevealing = false;
-          });
-        } else {
-          widget.onTap?.call();
-        }
-      },
-      child: Stack(
+            : null,
+        onHorizontalDragEnd: widget.showSwipeActions
+            ? (details) {
+                if (_dragOffset < -80) {
+                  if (_dragOffset != -160) HapticFeedback.lightImpact();
+                  setState(() => _dragOffset = -160);
+                } else if (_dragOffset > 40) {
+                  if (_dragOffset != 80) HapticFeedback.lightImpact();
+                  setState(() => _dragOffset = 80);
+                } else {
+                  setState(() {
+                    _dragOffset = 0;
+                    _isRevealing = false;
+                  });
+                }
+              }
+            : null,
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
         children: [
           // Background action buttons
           if (_isRevealing || _dragOffset != 0) ...[
@@ -116,7 +125,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                 children: [
                   const Spacer(),
                   _ActionButton(
-                    icon: Icons.volume_off,
+                    icon: t.isSilent ? Icons.volume_up : Icons.volume_off,
                     label: t.isSilent ? 'Unsilent' : 'Silent',
                     color: AppColors.electricBlue,
                     onTap: _onSilent,
@@ -291,6 +300,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
           ),
         ],
       ),
+    ),
     );
   }
 }
@@ -353,16 +363,20 @@ class _ActionButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600),
-            ),
-          ],
+        child: Semantics(
+          label: label,
+          button: true,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20, semanticLabel: ''),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
         ),
       ),
     );

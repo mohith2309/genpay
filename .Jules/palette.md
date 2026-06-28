@@ -1,0 +1,3 @@
+## 2025-05-14 - Custom Swipe Accessibility & Haptics
+**Learning:** Custom swipe gestures implemented via GestureDetector (like in TransactionCard) are invisible to screen readers. Using `customSemanticsActions` on the parent widget allows exposing these actions (Delete, Silent, Repeat) to accessibility services without requiring the user to perform the precise drag gesture.
+**Action:** Always pair custom drag-to-reveal gestures with `customSemanticsActions` and use `HitTestBehavior.opaque` on background action buttons to ensure they remain interactive when revealed. Use `HapticFeedback.lightImpact()` for gesture snaps and `HapticFeedback.selectionClick()` for state toggles.

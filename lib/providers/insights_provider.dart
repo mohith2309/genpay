@@ -161,8 +161,8 @@ List<MoodCorrelation> _calculateMoodCorrelations(List<Transaction> txns) {
     for (final t in entry.value) {
       catCount[t.category] = (catCount[t.category] ?? 0) + 1;
     }
-    final topCat = (catCount.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
-        .firstOrNull?.key ?? 'Other';
+    // ⚡ Bolt: Use O(N) reduce instead of O(N log N) sort to find maximum value
+    final topCat = catCount.isNotEmpty ? catCount.entries.reduce((a, b) => a.value >= b.value ? a : b).key : 'Other';
 
     return MoodCorrelation(
       mood: entry.key,

@@ -1,0 +1,3 @@
+## 2024-06-29 - Accessible Custom Swipe Actions
+**Learning:** When implementing custom swipe gestures for list items (like `TransactionCard`) without using Flutter's built-in `Dismissible` widget, screen reader users cannot access the swipe actions. Wrapping the gesture handler in a `Semantics` widget and supplying `customSemanticsActions` effectively bridges this accessibility gap. Also, dynamic labels and icons for toggleable actions (e.g., Silent/Unsilent) provide necessary context.
+**Action:** Always provide `Semantics(customSemanticsActions: ...)` when building custom gesture-based interactions that are not natively accessible. Conditionally provide these actions based on the state of the feature.

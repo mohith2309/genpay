@@ -51,6 +51,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
@@ -58,6 +59,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
+      _isRevealing = false;
     });
   }
 
@@ -116,7 +118,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                 children: [
                   const Spacer(),
                   _ActionButton(
-                    icon: Icons.volume_off,
+                    icon: t.isSilent ? Icons.volume_up : Icons.volume_off,
                     label: t.isSilent ? 'Unsilent' : 'Silent',
                     color: AppColors.electricBlue,
                     onTap: _onSilent,
@@ -344,6 +346,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         width: 72,

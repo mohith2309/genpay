@@ -1,0 +1,3 @@
+## 2024-05-24 - Dart O(N log N) Sort Anti-Pattern for Max Element
+**Learning:** Dart's collection utilities can inadvertently encourage sorting an entire list `O(N log N)` when chaining methods like `(Map.entries.toList()..sort()).first` just to find the maximum element. This allocates an unnecessary list and performs redundant sorting, especially in frequent insight generation loops.
+**Action:** When finding a max/min element, avoid `toList().sort()`. Use an `O(N)` `reduce()` operation (e.g., `entries.reduce((a, b) => a.value >= b.value ? a : b)`), and always ensure the collection `isNotEmpty` before reducing to avoid `StateError`.

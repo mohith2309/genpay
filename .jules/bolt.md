@@ -1,0 +1,3 @@
+## 2024-05-24 - O(N log N) sorting replaced by O(N) reduce
+**Learning:** Dart's `reduce()` operation is a powerful O(N) replacement for O(N log N) sorting when only the maximum/minimum element is needed from a collection, but it requires ensuring the collection is not empty as calling `reduce()` on an empty collection throws a `StateError`.
+**Action:** Always verify a collection is not empty before using `reduce()`, providing a fallback value if necessary, to safely replace sorting operations for finding extrema. Also use `>=` instead of `>` in `reduce` if replacing `sort().first` to match original tie-breaking behavior correctly.

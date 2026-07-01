@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -44,10 +45,12 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
@@ -55,6 +58,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onRepeat() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;

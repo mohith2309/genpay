@@ -1,0 +1,4 @@
+## 2026-07-02 - Unrestricted Payload Size (DoS) & Information Disclosure
+**Vulnerability:** Node.js backend lacked a payload size limit in custom `readBody` stream handling, allowing memory exhaustion via massive requests. Global error handler returned `e.message` directly to the client.
+**Learning:** `req.on('data')` needs strict accumulated `Buffer.byteLength` checks. To avoid 'Cannot set headers after they are sent' and properly reject, must use `req.pause()`, `res.writeHead(413, {'Connection': 'close'})`, invoke `req.destroy()` in `res.end` callback, and add an `if (res.headersSent) return;` check to `send()`. `req.on('end')` must also check `if (req.destroyed) return;`.
+**Prevention:** Always enforce a MAX_SIZE (e.g., 1MB) limit when manually parsing request bodies. Never expose raw error messages (like `e.message`) in generic 500 catch blocks.

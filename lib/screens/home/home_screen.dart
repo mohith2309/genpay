@@ -109,6 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         backgroundColor: AppColors.softRed,
                         child: IconButton(
                           icon: const Icon(Icons.sms_outlined),
+                          tooltip: 'Review pending SMS transactions',
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const SmsReviewScreen()),

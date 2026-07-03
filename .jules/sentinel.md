@@ -1,0 +1,5 @@
+
+## 2026-07-03 - Fix DoS and Information Disclosure vulnerabilities
+**Vulnerability:** The backend lacked request payload limits, allowing potential Denial of Service (DoS) attacks via memory exhaustion from massive payloads. Additionally, the global error handler leaked sensitive raw error messages (like `e.message`) to the client, leading to Information Disclosure.
+**Learning:** In a zero-dependency Node.js environment, `req.on('data')` buffers infinitely unless a manual limit is enforced. When closing the connection to drop large payloads, we must pause the stream (`req.pause()`), send a 413 response with `Connection: close`, and safely call `req.destroy()` to prevent 'Cannot set headers after they are sent' errors.
+**Prevention:** Always enforce a manual byte limit using `Buffer.byteLength()` in raw HTTP servers. Ensure `req.destroyed` is checked inside `req.on('end')` to avoid parsing incomplete data. Never expose raw error objects or messages in `500` responses; log them internally and return generic messages.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -49,16 +50,22 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
 
   void _onSilent() {
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
-    setState(() {
-      _dragOffset = 0;
-    });
+    if (mounted) {
+      setState(() {
+        _dragOffset = 0;
+        _isRevealing = false;
+      });
+    }
   }
 
   void _onRepeat() {
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
-    setState(() {
-      _dragOffset = 0;
-    });
+    if (mounted) {
+      setState(() {
+        _dragOffset = 0;
+        _isRevealing = false;
+      });
+    }
   }
 
   Color get _amountColor {
@@ -73,8 +80,14 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
     final categoryColor = AppUtils.getCategoryColor(t.category);
     final color = Color(int.parse(categoryColor.replaceAll('#', '0xFF')));
 
-    return GestureDetector(
-      onHorizontalDragUpdate: widget.showSwipeActions
+    return Semantics(
+      customSemanticsActions: widget.showSwipeActions ? {
+        CustomSemanticsAction(label: t.isSilent ? 'Unsilent' : 'Silent'): _onSilent,
+        const CustomSemanticsAction(label: 'Delete'): _onDelete,
+        const CustomSemanticsAction(label: 'Repeat'): _onRepeat,
+      } : null,
+      child: GestureDetector(
+        onHorizontalDragUpdate: widget.showSwipeActions
           ? (details) {
               setState(() {
                 _dragOffset = (_dragOffset + details.delta.dx).clamp(-160.0, 80.0);
@@ -116,7 +129,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                 children: [
                   const Spacer(),
                   _ActionButton(
-                    icon: Icons.volume_off,
+                    icon: t.isSilent ? Icons.volume_up : Icons.volume_off,
                     label: t.isSilent ? 'Unsilent' : 'Silent',
                     color: AppColors.electricBlue,
                     onTap: _onSilent,
@@ -291,7 +304,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
           ),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -344,6 +357,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         width: 72,

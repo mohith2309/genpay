@@ -108,6 +108,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         label: Text('$pendingCount'),
                         backgroundColor: AppColors.softRed,
                         child: IconButton(
+                          tooltip: 'Review pending SMS transactions',
                           icon: const Icon(Icons.sms_outlined),
                           onPressed: () => Navigator.push(
                             context,

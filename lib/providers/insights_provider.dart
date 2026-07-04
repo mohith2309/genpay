@@ -56,9 +56,12 @@ FutureProjection _calculateProjection(List<Transaction> transactions) {
     byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
   }
 
-  final sortedCats = (byCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value)));
-  final biggestCategory = sortedCats.isNotEmpty ? sortedCats.first.key : 'Other';
-  final biggestAmount = sortedCats.isNotEmpty ? sortedCats.first.value : 0.0;
+  // Optimization: Replace O(N log N) sort with O(N) reduce to find max category
+  final biggestEntry = byCategory.isNotEmpty
+      ? byCategory.entries.reduce((a, b) => a.value >= b.value ? a : b)
+      : null;
+  final biggestCategory = biggestEntry?.key ?? 'Other';
+  final biggestAmount = biggestEntry?.value ?? 0.0;
 
   // What saving 2x/week on top category would save
   final potentialSaving = biggestAmount * 0.2;
@@ -161,8 +164,10 @@ List<MoodCorrelation> _calculateMoodCorrelations(List<Transaction> txns) {
     for (final t in entry.value) {
       catCount[t.category] = (catCount[t.category] ?? 0) + 1;
     }
-    final topCat = (catCount.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
-        .firstOrNull?.key ?? 'Other';
+    // Optimization: Replace O(N log N) sort with O(N) reduce to find top category
+    final topCat = catCount.isNotEmpty
+        ? catCount.entries.reduce((a, b) => a.value >= b.value ? a : b).key
+        : 'Other';
 
     return MoodCorrelation(
       mood: entry.key,

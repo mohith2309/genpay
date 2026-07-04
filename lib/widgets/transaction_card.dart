@@ -5,6 +5,8 @@ import '../core/theme.dart';
 import '../core/utils.dart';
 import '../core/constants.dart';
 import '../providers/transaction_provider.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 
 class TransactionCard extends ConsumerStatefulWidget {
   final Transaction transaction;
@@ -44,21 +46,30 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact(); // Tactile feedback for destructive action
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick(); // Tactile feedback for state toggle
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
-    setState(() {
-      _dragOffset = 0;
-    });
+    if (mounted) {
+      setState(() {
+        _dragOffset = 0;
+        _isRevealing = false; // Ensure UI collapses after action
+      });
+    }
   }
 
   void _onRepeat() {
+    HapticFeedback.selectionClick(); // Tactile feedback for duplication
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
-    setState(() {
-      _dragOffset = 0;
-    });
+    if (mounted) {
+      setState(() {
+        _dragOffset = 0;
+        _isRevealing = false; // Ensure UI collapses after action
+      });
+    }
   }
 
   Color get _amountColor {
@@ -73,7 +84,15 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
     final categoryColor = AppUtils.getCategoryColor(t.category);
     final color = Color(int.parse(categoryColor.replaceAll('#', '0xFF')));
 
-    return GestureDetector(
+    return Semantics(
+      customSemanticsActions: !widget.showSwipeActions
+          ? null
+          : {
+              const CustomSemanticsAction(label: 'Delete'): _onDelete,
+              CustomSemanticsAction(label: t.isSilent ? 'Unsilent' : 'Silent'): _onSilent,
+              const CustomSemanticsAction(label: 'Repeat'): _onRepeat,
+            },
+      child: GestureDetector(
       onHorizontalDragUpdate: widget.showSwipeActions
           ? (details) {
               setState(() {
@@ -85,10 +104,13 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
       onHorizontalDragEnd: widget.showSwipeActions
           ? (details) {
               if (_dragOffset < -80) {
+                HapticFeedback.lightImpact(); // Feedback for snapping to revealed state
                 setState(() => _dragOffset = -160);
               } else if (_dragOffset > 40) {
+                HapticFeedback.lightImpact(); // Feedback for snapping to revealed state
                 setState(() => _dragOffset = 80);
               } else {
+                if (_dragOffset != 0) HapticFeedback.lightImpact(); // Feedback for closing
                 setState(() {
                   _dragOffset = 0;
                   _isRevealing = false;
@@ -116,7 +138,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                 children: [
                   const Spacer(),
                   _ActionButton(
-                    icon: Icons.volume_off,
+                    icon: t.isSilent ? Icons.volume_up : Icons.volume_off,
                     label: t.isSilent ? 'Unsilent' : 'Silent',
                     color: AppColors.electricBlue,
                     onTap: _onSilent,
@@ -291,7 +313,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
           ),
         ],
       ),
-    );
+    ),);
   }
 }
 
@@ -345,6 +367,7 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque, // Ensure reliable tap detection
       child: Container(
         width: 72,
         height: 64,

@@ -72,6 +72,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final merchant = _merchantController.text.toLowerCase();
     for (final entry in AppConstants.merchantCategoryMap.entries) {
       if (merchant.contains(entry.key)) {
+        HapticFeedback.selectionClick();
         setState(() => _selectedCategory = entry.value);
         return;
       }
@@ -206,7 +207,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     // 1. Spending Freeze Check
     final proceedFreeze = await _checkSpendingFreeze(amount);
     if (!proceedFreeze) {
-      setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
       return;
     }
 
@@ -234,7 +235,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     // 2. Upgrade Advisory Check
     final proceedUpgrade = await _checkUpgradeAdvisory(txn);
     if (!proceedUpgrade) {
-      setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
       return;
     }
 
@@ -244,7 +245,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       await ref.read(transactionsProvider.notifier).addTransaction(txn);
     }
 
-    setState(() => _isSaving = false);
+    HapticFeedback.mediumImpact();
+    if (mounted) setState(() => _isSaving = false);
     if (mounted) Navigator.pop(context);
   }
 
@@ -359,7 +361,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 children: AppConstants.defaultCategories.map((cat) {
                   final isSelected = cat == _selectedCategory;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = cat),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedCategory = cat);
+                    },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

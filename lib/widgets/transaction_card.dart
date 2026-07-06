@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -44,10 +45,12 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
@@ -55,6 +58,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onRepeat() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
@@ -85,8 +89,10 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
       onHorizontalDragEnd: widget.showSwipeActions
           ? (details) {
               if (_dragOffset < -80) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = -160);
               } else if (_dragOffset > 40) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = 80);
               } else {
                 setState(() {
@@ -116,7 +122,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                 children: [
                   const Spacer(),
                   _ActionButton(
-                    icon: Icons.volume_off,
+                    icon: t.isSilent ? Icons.volume_up : Icons.volume_off,
                     label: t.isSilent ? 'Unsilent' : 'Silent',
                     color: AppColors.electricBlue,
                     onTap: _onSilent,

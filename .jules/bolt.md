@@ -1,0 +1,3 @@
+## 2024-05-24 - Avoid O(N log N) sorting for finding the maximum element
+**Learning:** Dart's `sort().first` or `sort().firstOrNull` on collections (like maps/lists) iterates O(N log N) time and allocates new lists (using `.toList()`), which is highly inefficient for simply finding a maximum/minimum element.
+**Action:** Replace `collection.toList()..sort((a, b) => b.compareTo(a)).first` with `collection.reduce((a, b) => a >= b ? a : b)`. Use `>=` instead of `>` to preserve original tie-breaking behavior (returning the first occurring maximum element). Always verify `isNotEmpty` as `reduce` throws a `StateError` on empty collections.

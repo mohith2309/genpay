@@ -72,7 +72,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final merchant = _merchantController.text.toLowerCase();
     for (final entry in AppConstants.merchantCategoryMap.entries) {
       if (merchant.contains(entry.key)) {
-        setState(() => _selectedCategory = entry.value);
+        if (_selectedCategory != entry.value) {
+          HapticFeedback.selectionClick();
+          setState(() => _selectedCategory = entry.value);
+        }
         return;
       }
     }
@@ -244,8 +247,11 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       await ref.read(transactionsProvider.notifier).addTransaction(txn);
     }
 
-    setState(() => _isSaving = false);
-    if (mounted) Navigator.pop(context);
+    if (mounted) {
+      HapticFeedback.mediumImpact();
+      setState(() => _isSaving = false);
+      Navigator.pop(context);
+    }
   }
 
 
@@ -359,7 +365,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 children: AppConstants.defaultCategories.map((cat) {
                   final isSelected = cat == _selectedCategory;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = cat),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedCategory = cat);
+                    },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

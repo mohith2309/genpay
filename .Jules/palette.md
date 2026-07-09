@@ -1,0 +1,3 @@
+## 2026-07-09 - [Standardized Haptic Feedback for Custom Gestures]
+**Learning:** In financial apps where interactions (like swiping to delete or silent) can have significant consequences, combining tactile feedback with clear accessibility labels is crucial. Haptic feedback provides immediate physical confirmation for gestures that might not have a clear "snap" animation, while Semantics ensure screen reader users aren't excluded from hidden gesture-based utility.
+**Action:** Use `HapticFeedback.lightImpact()` for gesture snaps/reveals, `HapticFeedback.mediumImpact()` for destructive or primary actions (delete, duplicate), and `HapticFeedback.selectionClick()` for state toggles. Always wrap custom gesture targets in `Semantics` with descriptive labels.

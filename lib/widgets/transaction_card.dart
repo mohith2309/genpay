@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/transaction.dart';
 import '../core/theme.dart';
@@ -44,10 +45,12 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onDelete() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction.id);
   }
 
   void _onSilent() {
+    HapticFeedback.selectionClick();
     ref.read(transactionsProvider.notifier).toggleSilent(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
@@ -55,6 +58,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   }
 
   void _onRepeat() {
+    HapticFeedback.mediumImpact();
     ref.read(transactionsProvider.notifier).duplicateTransaction(widget.transaction.id);
     setState(() {
       _dragOffset = 0;
@@ -85,8 +89,10 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
       onHorizontalDragEnd: widget.showSwipeActions
           ? (details) {
               if (_dragOffset < -80) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = -160);
               } else if (_dragOffset > 40) {
+                HapticFeedback.lightImpact();
                 setState(() => _dragOffset = 80);
               } else {
                 setState(() {
@@ -238,7 +244,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
                               _UpiAppChip(app: t.upiApp!),
                             ] else if (t.paymentMethod == 'UPI') ...[
                               const SizedBox(width: 6),
-                              _UpiAppChip(app: 'UPI'),
+                              const _UpiAppChip(app: 'UPI'),
                             ],
                             if (t.mood != null) ...[
                               const SizedBox(width: 4),
@@ -345,24 +351,28 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 72,
-        height: 64,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600),
-            ),
-          ],
+      child: Semantics(
+        button: true,
+        label: label,
+        child: Container(
+          width: 72,
+          height: 64,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -124,6 +124,7 @@ class _ReceiveMoneyScreenState extends ConsumerState<ReceiveMoneyScreen> {
           if (hasVpa)
             IconButton(
               icon: const Icon(Icons.share_outlined),
+              tooltip: 'Share payment request',
               onPressed: () {
                 final text =
                     'Pay me${_requestAmount != null ? ' ${AppUtils.formatCurrency(_requestAmount!)}' : ''} on UPI: ${profile.vpa}';

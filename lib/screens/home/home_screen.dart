@@ -109,6 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         backgroundColor: AppColors.softRed,
                         child: IconButton(
                           icon: const Icon(Icons.sms_outlined),
+                          tooltip: 'Review pending SMS',
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const SmsReviewScreen()),
@@ -230,6 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          tooltip: 'Add new transaction',
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const AddTransactionScreen()),

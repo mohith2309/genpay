@@ -60,6 +60,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         actions: [
           IconButton(
             icon: Icon(_torchOn ? Icons.flash_on : Icons.flash_off),
+            tooltip: 'Toggle flashlight',
             onPressed: () {
               _controller.toggleTorch();
               setState(() => _torchOn = !_torchOn);

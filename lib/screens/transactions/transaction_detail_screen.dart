@@ -42,6 +42,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                 builder: (_) => AddTransactionScreen(editTransaction: t),
               ),
             ),
+            tooltip: 'Edit Transaction',
           ),
         ],
       ),

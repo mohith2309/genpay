@@ -306,7 +306,8 @@ Be specific with ₹ amounts. Use Indian context. Be slightly roasting but helpf
       byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
     }
 
-    final topCat = (byCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).first;
+    // Optimization: Use reduce instead of sort().first for O(n) max finding
+    final topCat = byCategory.entries.reduce((a, b) => a.value >= b.value ? a : b);
     final total = byCategory.values.fold(0.0, (a, b) => a + b);
 
     return GeminiInsightResult(

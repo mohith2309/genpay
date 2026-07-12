@@ -38,8 +38,8 @@ final subscriptionsProvider = Provider<List<Subscription>>((ref) {
 
   final subs = <Subscription>[];
   byMerchant.forEach((merchant, txns) {
-    txns.sort((a, b) => b.date.compareTo(a.date));
-    final latest = txns.first;
+    // Optimization: Use reduce instead of sort().first for O(n) max finding
+    final latest = txns.reduce((a, b) => a.date.compareTo(b.date) >= 0 ? a : b);
     subs.add(Subscription(
       merchant: merchant,
       category: latest.category,

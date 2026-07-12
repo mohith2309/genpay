@@ -91,8 +91,8 @@ class TransactionAnalyzer {
     if (pastTxns.isEmpty) return null;
 
     // Find the latest previous transaction amount
-    pastTxns.sort((a, b) => b.date.compareTo(a.date));
-    final oldAmount = pastTxns.first.amount;
+    // Optimization: Use reduce instead of sort().first for O(n) max finding
+    final oldAmount = pastTxns.reduce((a, b) => a.date.compareTo(b.date) >= 0 ? a : b).amount;
 
     if (newTxn.amount > oldAmount) {
       // It's a price hike / plan upgrade

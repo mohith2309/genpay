@@ -1,0 +1,4 @@
+
+## 2024-05-24 - Accessible Swipe Actions in Flutter
+**Learning:** When implementing custom interactive UI elements like swipeable list items, screen readers cannot easily discover or execute visual swipe gestures. Exposing these via `customSemanticsActions` allows assistive tech users to perform the actions. Furthermore, any visually hidden background action buttons revealed by the swipe must be wrapped in `ExcludeSemantics` to keep the accessibility tree accurate and prevent screen readers from redundantly announcing or focusing on hidden features. Background action buttons must also use `HitTestBehavior.opaque` to reliably intercept taps.
+**Action:** Always conditionally expose custom swipe gestures via a `Semantics` wrapper and wrap background action buttons with `ExcludeSemantics`. Ensure `HitTestBehavior.opaque` is used on background tap targets.

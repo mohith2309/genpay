@@ -1,0 +1,3 @@
+## 2025-02-27 - Replace O(N log N) sort() with O(N) reduce() for max element
+**Learning:** The codebase frequently uses `(list..sort()).first` or `firstOrNull` to find the maximum element (e.g., top category in analytics and insights). This is an O(N log N) operation and creates unnecessary lists.
+**Action:** Replace with `reduce((a, b) => a.value >= b.value ? a : b)`. Always guard against empty collections with `.isNotEmpty` to prevent `StateError`, and use `>=` to preserve original tie-breaking behavior (since stable sort keeps the first occurrence, the first occurrence should win if values are equal).

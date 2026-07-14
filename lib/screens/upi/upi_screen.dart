@@ -112,6 +112,7 @@ class UpiScreen extends ConsumerWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.qr_code_scanner),
+                      tooltip: 'Scan QR code',
                       onPressed: () => _push(context, const ScanQrScreen()),
                     ),
                   ],

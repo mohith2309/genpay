@@ -1,0 +1,4 @@
+## 2025-02-14 - Request Stream Promise Leaks & Payload Limits
+**Vulnerability:** Missing payload limits lead to unbounded memory consumption (DoS). Also, calling req.destroy() without explicitly rejecting the enclosing Promise leaves it pending indefinitely, causing memory leaks.
+**Learning:** In Node.js, when destroying a request stream (e.g., req.destroy()) while parsing data inside a Promise, the 'end' event will not fire. The Promise must be explicitly rejected, and an 'if (req.destroyed) return;' check must be added to the 'end' handler. Multi-byte payload limits must use Buffer.byteLength.
+**Prevention:** Always enforce byte-length payload limits on streams, explicitly reject Promises when destroying streams early, check req.destroyed in 'end' handlers, and prevent 'headers already sent' errors in global response handlers.

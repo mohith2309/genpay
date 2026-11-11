@@ -70,8 +70,7 @@ class _TransactionCardState extends ConsumerState<TransactionCard>
   @override
   Widget build(BuildContext context) {
     final t = widget.transaction;
-    final categoryColor = AppUtils.getCategoryColor(t.category);
-    final color = Color(int.parse(categoryColor.replaceAll('#', '0xFF')));
+    final color = AppUtils.getCategoryColor(t.category);
 
     return GestureDetector(
       onHorizontalDragUpdate: widget.showSwipeActions

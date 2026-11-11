@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:intl/intl.dart';
 
 class AppUtils {
@@ -55,22 +56,23 @@ class AppUtils {
     return 10 - remainder;
   }
 
-  static String getCategoryColor(String category) {
+  // Optimization: Return Color object directly to prevent string parsing on every render
+  static Color getCategoryColor(String category) {
     const colors = {
-      'Food': '#FF6B6B',
-      'Transport': '#00D9FF',
-      'Shopping': '#FF9FF3',
-      'Bills': '#FFD93D',
-      'Entertainment': '#6C5CE7',
-      'Health': '#39FF14',
-      'Education': '#74B9FF',
-      'Travel': '#FD79A8',
-      'Groceries': '#55EFC4',
-      'Fuel': '#FDCB6E',
-      'Subscriptions': '#A29BFE',
-      'Other': '#B2BEC3',
+      'Food': Color(0xFFFF6B6B),
+      'Transport': Color(0xFF00D9FF),
+      'Shopping': Color(0xFFFF9FF3),
+      'Bills': Color(0xFFFFD93D),
+      'Entertainment': Color(0xFF6C5CE7),
+      'Health': Color(0xFF39FF14),
+      'Education': Color(0xFF74B9FF),
+      'Travel': Color(0xFFFD79A8),
+      'Groceries': Color(0xFF55EFC4),
+      'Fuel': Color(0xFFFDCB6E),
+      'Subscriptions': Color(0xFFA29BFE),
+      'Other': Color(0xFFB2BEC3),
     };
-    return colors[category] ?? '#888888';
+    return colors[category] ?? const Color(0xFF888888);
   }
 
   static bool isSameMonth(DateTime a, DateTime b) {

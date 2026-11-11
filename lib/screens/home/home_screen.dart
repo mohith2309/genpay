@@ -349,9 +349,7 @@ class _CategoryCards extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: filtered.asMap().entries.map((entry) {
           final b = entry.value;
-          final color = Color(
-            int.parse(AppUtils.getCategoryColor(b.categoryId).replaceAll('#', '0xFF')),
-          );
+          final color = AppUtils.getCategoryColor(b.categoryId);
           return Container(
             width: 120,
             margin: const EdgeInsets.only(right: 12),

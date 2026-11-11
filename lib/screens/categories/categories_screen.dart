@@ -84,8 +84,7 @@ class _CategoryTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final color = Color(
-        int.parse(AppUtils.getCategoryColor(category).replaceAll('#', '0xFF')));
+    final color = AppUtils.getCategoryColor(category);
 
     return GestureDetector(
       onTap: () {

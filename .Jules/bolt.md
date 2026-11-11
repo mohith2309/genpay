@@ -1,0 +1,3 @@
+## 2024-11-11 - Color Object Optimization
+**Learning:** Codebase patterns that return primitive data types (like hex strings) for framework objects (like colors) from utility functions can cause hidden performance bottlenecks. In this app, `getCategoryColor` was returning a hex string, forcing `Color(int.parse(hex.replaceAll('#', '0xFF')))` to run on every single list item and widget render.
+**Action:** Always prefer storing and returning the actual framework object (`Color`) from utility dictionaries to skip parsing at render time, especially for data heavily used in ListViews (like transaction categories).

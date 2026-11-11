@@ -199,8 +199,7 @@ class _SubscriptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Color(
-        int.parse(AppUtils.getCategoryColor(sub.category).replaceAll('#', '0xFF')));
+    final color = AppUtils.getCategoryColor(sub.category);
     final dueSoon = sub.daysUntilDue <= 3;
 
     return GestureDetector(

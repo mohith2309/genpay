@@ -26,8 +26,7 @@ class TransactionDetailScreen extends ConsumerWidget {
         transaction;
 
     final t = live;
-    final categoryColor =
-        Color(int.parse(AppUtils.getCategoryColor(t.category).replaceAll('#', '0xFF')));
+    final categoryColor = AppUtils.getCategoryColor(t.category);
     final isUpi = t.paymentMethod == 'UPI';
 
     return Scaffold(

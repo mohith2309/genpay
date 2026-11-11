@@ -1,0 +1,3 @@
+## 2024-11-10 - Accessible Swipe Gestures for Lists
+**Learning:** Swipe actions via gesture detectors are opaque to screen readers. If background buttons are kept visually hidden until swiped, screen readers might still try to focus them, or they might be completely invisible, causing users to miss features.
+**Action:** Use `Semantics(customSemanticsActions: ...)` on the list item to expose the actions to screen readers, conditionally nullified if disabled. Wrap the hidden background buttons in `ExcludeSemantics` to prevent redundant/confusing focus. Ensure background action buttons have `HitTestBehavior.opaque` to reliably receive taps when revealed.

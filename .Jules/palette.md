@@ -1,0 +1,3 @@
+## 2024-03-24 - Accessibility: Missing Tooltips on Icon-Only Buttons
+**Learning:** In Flutter, icon-only buttons (`IconButton` and `FloatingActionButton`) are completely opaque to screen readers (and visual users exploring functionality) unless a `tooltip` property is explicitly provided. Many crucial navigational and functional icons across GenPay screens are missing this property.
+**Action:** When implementing or reviewing `IconButton` and `FloatingActionButton` widgets, always ensure a concise, descriptive `tooltip` attribute is provided for both screen reader announcements and on-hover/long-press visual feedback.

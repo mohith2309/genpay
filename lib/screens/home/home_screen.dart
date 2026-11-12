@@ -234,6 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             context,
             MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
           ),
+          tooltip: 'Add Transaction',
           child: const Icon(Icons.add, size: 28),
         ).animate().scale(delay: 500.ms),
       ),
